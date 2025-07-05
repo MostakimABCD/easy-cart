@@ -1,0 +1,10 @@
+const firebaseConfig = {
+  apiKey: "AIzaSyAQp4N1yxkT-KDdzKSKQWJEMy_Wa9AvRH4",
+  authDomain: "shopdb-611a8.firebaseapp.com",
+  databaseURL: "https://shopdb-611a8-default-rtdb.firebaseio.com",
+  projectId: "shopdb-611a8",
+  storageBucket: "shopdb-611a8.firebasestorage.app",
+  messagingSenderId: "458073095107",
+  appId: "1:458073095107:web:e78bf8270ed2ffd6df5b76",
+  measurementId: "G-P9KDZXNPQ5"
+};

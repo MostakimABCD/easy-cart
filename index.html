@@ -1,0 +1,1188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>🛍️ Easy Cart - Shop Dashboard</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="container">
+    <!-- Section 1: Heading -->
+    <h1>🛍️ Shop Dashboard</h1>
+    <p class="centered">👋⛩️Welcome to Easy Cart 🛒🌱🌿🍃<br> - your digital shopping assistant!</p>
+    <p class="centered">Manage your shop efficiently and professionally.😉</p>
+
+    <!-- Section 1.2: Product showing... -->
+    <div class="centered">
+      <button class="green" onclick="showProductChart()">📦 Show Product Stock & Price</button>
+    </div>
+    <div id="productChart" class="reportDisplay" style="display:none;"></div>
+    <!-- ...existing code... -->
+   
+
+    <p class="centered" style="font-size:1.15em; color:#2b7a0b; font-weight:bold; margin-top:24px;">
+      🚀 Explore the main features below to manage your shop with ease! Jump to any section you need:
+    </p>
+    <hr />
+
+    <!-- RECEIPT SECTION -->
+    <h1 class="centered section-header" onclick="toggleSection('receiptSection')">----RECEIPT----</h1>
+    <div id="receiptSection" class="section-content" style="display:none;">
+      <hr />
+      <label>📅 Select Date:</label>
+      <input type="date" id="date" />
+      
+      <label>👤 Customer Name:</label>
+      <input list="customers" id="customer" placeholder="Enter Customer name..." />
+      <datalist id="customers"></datalist>
+      <button class="green" onclick="saveTypedCustomer()" id="saveCustomerBtn" style="display:none;">💾 Save Customer</button>
+
+      <hr />
+      <label>🛒 Choose Your Product:</label>
+      <select id="product">
+        <option value="" disabled selected>Choose your product...</option>
+      </select>
+
+      <label>💸 Price (৳):</label>
+      <input type="text" id="price" readonly />
+
+      <label>🔢 Quantity:</label>
+      <input type="number" id="quantity" />
+
+      <div class="centered">
+        <button class="green" onclick="addToList()">📥 Add to List</button>
+      </div>
+
+      <h2 class="left">🛍️ PRODUCT LIST:</h2>
+      <ol id="productList"></ol>
+      <b id="total">💵 Total Amount: ৳0</b>
+      <br><br>
+
+      <!-- Payment -->
+      <label>💳 Cash Receive (৳):</label>
+      <input type="number" id="cash" oninput="calculateChange()" />
+
+      <b id="change">🔁 Change: ৳0</b>
+
+      <!-- Save & View -->
+      <hr /><br />
+      <button class="green" onclick="toggleViewReport(this)">📋 View & 💾Save Report</button>
+      <div id="viewReport" class="reportDisplay" style="display:none;"></div>
+      <br />
+
+      <!-- Send Message -->
+      <button class="green" onclick="copyReport()">📋 Copy Report</button>
+      <button class="green" onclick="sendViaWhatsApp()">💬 Send Report by Message</button>
+      <a id="waDirectLink" style="display:none;" target="_blank" rel="noopener noreferrer">Open in WhatsApp</a>
+      <p style="color:#b77; font-size:0.95em;">
+        If WhatsApp does not open, please tap the browser menu and choose "Open in Chrome" or "Open in Browser".
+      </p>
+    </div>
+    <hr />
+
+    <!-- REPORT SECTION -->
+    <h1 class="centered section-header" onclick="toggleSection('reportSection')">📈Report Section</h1>
+    <div id="reportSection" class="section-content" style="display:none;">
+      <br>
+      <h2 class="left">📊 DAILY REPORT:</h2>
+      <label>📅Select Date:</label>
+      <input type="date" id="dailyDate"/>
+      <button class="green" onclick="toggleDailyReport(this)">📊 View Daily Report</button>
+      <div id="dailyReports" class="reportDisplay" style="display:none;"></div>
+      <br>
+
+      <h2 class="left">📊 PRODUCT REPORT:</h2>
+      <label for="reportDate">📅 Select Date for Product Report:</label>
+      <input type="date" id="reportDate" onchange="onReportDateChange()" />
+      <div id="productReport" class="reportDisplay" style="display:none;"></div>
+      <button class="green" onclick="toggleProductReport(this)" id="showProductReportBtn">📜Show Product Report</button>
+      <br>
+      <!-- Monthly Statement UI -->
+      <label for="monthlyStatementMonth">📅 Select Month for Statement:</label>
+      <input type="month" id="monthlyStatementMonth" />
+      <!-- Change: Customer dropdown for monthly statement -->
+      <label for="monthlyStatementCustomer" style="margin-left:10px;">👤 Customer (optional):</label>
+      <select id="monthlyStatementCustomer" style="min-width:180px;">
+        <option value="" disabled selected>Select customer...</option>
+      </select>
+      <button class="green" onclick="toggleMonthlyStatement(this)" id="showMonthlyStatementBtn">📆 Show Monthly Statement</button>
+      <button class="green" onclick="toggleMonthlyStatementForCustomer(this)" id="showMonthlyStatementCustomerBtn">👤 Show Customer Statement</button>
+      <div id="monthlyStatement" class="reportDisplay" style="display:none;"></div>
+      <div id="monthlyStatementCustomerDiv" class="reportDisplay" style="display:none;"></div>
+    </div>
+    <hr>
+
+    <!-- EDIT SECTION -->
+    <h1 class="centered section-header" onclick="toggleSection('editSection')">📝Edit Section✍️</h1>
+    <div id="editSection" class="section-content" style="display:none;">
+      <br>
+      <div style="padding:16px; background:#f8fff8; border-radius:8px; box-shadow:0 2px 8px #e0ffe0;">
+        <h2 class="left" style="margin-bottom:8px;">🚚 STOCK UPDATE:</h2>
+        <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;">
+          <label style="min-width:120px;">🆕 Select Product:</label>
+          <select id="stockProduct" style="flex:1;min-width:180px;"></select>
+          <label style="min-width:120px;">➕ Add Stock:</label>
+          <input type="number" id="stockAmount" style="width:80px;" min="1" />
+          <button class="green" onclick="addStockToFirestore()" style="font-weight:bold;">🔁 Update Stock in Firestore</button>
+          <span id="stockUpdateStatus" style="margin-left:10px;color:#2b7a0b;font-size:0.95em;"></span>
+        </div>
+      </div>
+    </div>
+    <hr />
+
+    <!-- NEW PRODUCT SECTION -->
+    <h1 class="centered section-header" onclick="toggleSection('newProductSection')">🆕 Add New Product</h1>
+    <div id="newProductSection" class="section-content" style="display:none;">
+      <br>
+      <h2 class="left">➕ Enter New Product Details:</h2>
+      <label>🛒 Product Name:</label>
+      <input type="text" id="np_productName" />
+      <label>📦 Initial Stock:</label>
+      <input type="number" id="np_stock" />
+      <label>💰 Purchase Price (৳):</label>
+      <input type="number" id="np_purchasePrice" />
+      <label>💸 Selling Price (৳):</label>
+      <input type="number" id="np_sellingPrice" />
+      <button class="green" onclick="addNewProductToFirestore()">➕ Add Product to Firestore</button>
+      <span id="np_status" style="margin-left:10px;color:#2b7a0b;font-size:0.95em;"></span>
+    </div>
+    <hr />
+
+    <!-- UPDATE PRODUCT SECTION -->
+    <h1 class="centered section-header" onclick="toggleSection('updateProductSection')">🛠️ Update Product Details</h1>
+    <div id="updateProductSection" class="section-content" style="display:none;">
+      <br>
+      <h2 class="left">📝 Edit Existing Product:</h2>
+      <label>🛒 Select Product:</label>
+      <select id="upd_productSelect" onchange="fillUpdateProductFields()"></select>
+      <div id="upd_fields" style="margin-top:10px;display:none;">
+        <label>🛒 Product Name:</label>
+        <input type="text" id="upd_productName" readonly />
+        <label>📦 Stock:</label>
+        <input type="number" id="upd_stock" />
+        <label>💰 Purchase Price (৳):</label>
+        <input type="number" id="upd_purchasePrice" />
+        <label>💸 Selling Price (৳):</label>
+        <input type="number" id="upd_sellingPrice" />
+        <button class="green" onclick="updateProductDetails()">💾 Update Product in Firestore</button>
+        <span id="upd_status" style="margin-left:10px;color:#2b7a0b;font-size:0.95em;"></span>
+      </div>
+    </div>
+    <hr />
+
+    <!-- Section 9: Ending -->
+    <p class="centered">Thank you for using Easy Cart.</p>
+    <p class="centered">We hope your business grows more with us!</p>
+    <p class="centered">📞+8801731-414245, Contact us for any support!</p>
+  </div>
+
+<script type="module">
+// --- FIREBASE IMPORTS ---
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
+import { getFirestore, doc, setDoc, getDoc, collection, addDoc, getDocs, updateDoc } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-analytics.js";
+
+// --- FIREBASE INIT ---
+const firebaseConfig = {
+  apiKey: "AIzaSyAQp4N1yxkT-KDdzKSKQWJEMy_Wa9AvRH4",
+  authDomain: "shopdb-611a8.firebaseapp.com",
+  databaseURL: "https://shopdb-611a8-default-rtdb.firebaseio.com",
+  projectId: "shopdb-611a8",
+  storageBucket: "shopdb-611a8.firebasestorage.app",
+  messagingSenderId: "458073095107",
+  appId: "1:458073095107:web:e78bf8270ed2ffd6df5b76",
+  measurementId: "G-P9KDZXNPQ5"
+};
+
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
+const db = getFirestore(app);
+
+// --- DATA VARIABLES ---
+let products = {};
+let dailyProductStats = {};
+let customers = [];
+let productList = [];
+let totalAmount = 0;
+let dailyReports = {};
+
+// --- LOAD PRODUCTS FROM FIRESTORE ---
+async function loadProductsFromFirestore() {
+  products = {};
+  try {
+    const querySnapshot = await getDocs(collection(db, "products"));
+    querySnapshot.forEach((docSnap) => {
+      const d = docSnap.data();
+      products[d.productName] = {
+        stock: d.stock,
+        purchasePrice: d.purchasePrice,
+        sellPrice: d.sellingPrice,
+        sold: d.sold || 0,
+        profit: d.profit || 0
+      };
+    });
+    updateProductDropdown();
+    updateCustomerDropdown();
+  } catch (e) {
+    console.error("Error loading products from Firestore:", e);
+  }
+}
+
+// --- FIRESTORE LOAD ---
+async function loadFromStorage() {
+  products = {
+    "Chips": { stock: 0, purchasePrice: 8, sellPrice: 10, sold: 0, profit: 0 },
+    "Egg 1pc": { stock: 0, purchasePrice: 8, sellPrice: 10, sold: 0, profit: 0 },
+    "Pen": { stock: 0, purchasePrice: 3, sellPrice: 5, sold: 0, profit: 0 },
+    "Potato /kg": { stock: 0, purchasePrice: 18, sellPrice: 25, sold: 0, profit: 0 },
+    "Rice-Miniket (per kg)": { stock: 0, purchasePrice: 60, sellPrice: 70, sold: 0, profit: 0 },
+    "Rice-Nazirshail (per kg)": { stock: 0, purchasePrice: 65, sellPrice: 75, sold: 0, profit: 0 }
+  };
+  customers = [];
+  dailyReports = {};
+  dailyProductStats = {};
+
+  try {
+    let docSnap;
+
+    docSnap = await getDoc(doc(db, "easycart", "products"));
+    if (docSnap.exists()) products = docSnap.data().products || products;
+
+    docSnap = await getDoc(doc(db, "easycart", "customers"));
+    if (docSnap.exists()) customers = docSnap.data().customers || [];
+
+    docSnap = await getDoc(doc(db, "easycart", "dailyReports"));
+    if (docSnap.exists()) dailyReports = docSnap.data().dailyReports || {};
+
+    docSnap = await getDoc(doc(db, "easycart", "dailyProductStats"));
+    if (docSnap.exists()) dailyProductStats = docSnap.data().dailyProductStats || {};
+
+    console.log("Loaded from Firestore");
+  } catch (e) {
+    console.error("Error loading from Firestore:", e);
+  }
+
+  updateProductDropdown();
+  updateCustomerDropdown();
+}
+
+// --- FIRESTORE SAVE ---
+async function saveToStorage() {
+  try {
+    await setDoc(doc(db, "easycart", "products"), { products });
+    await setDoc(doc(db, "easycart", "customers"), { customers });
+    await setDoc(doc(db, "easycart", "dailyReports"), { dailyReports });
+    await setDoc(doc(db, "easycart", "dailyProductStats"), { dailyProductStats });
+    console.log("Saved to Firestore");
+  } catch (e) {
+    console.error("Error saving to Firestore:", e);
+    alert("❌ Failed to save data to Firestore!");
+  }
+}
+
+// --- DOM READY ---
+window.addEventListener("DOMContentLoaded", () => {
+  loadProductsFromFirestore();
+  // Attach event listeners only if elements exist
+  const productSelect = document.getElementById("product");
+  if (productSelect) {
+    productSelect.addEventListener("change", function () {
+      const product = products[this.value];
+      const priceInput = document.getElementById("price");
+      if (priceInput) priceInput.value = product ? product.sellPrice : "";
+    });
+  }
+
+  const customerInput = document.getElementById("customer");
+  if (customerInput) {
+    customerInput.addEventListener("input", function() {
+      const name = this.value.trim();
+      const btn = document.getElementById("saveCustomerBtn");
+      if (btn) btn.style.display = (name && !customers.includes(name)) ? "inline-block" : "none";
+    });
+  }
+
+  updateProductDropdown();
+  updateCustomerDropdown();
+});
+
+// --- UI & LOGIC FUNCTIONS ---
+
+function showProductChart() {
+  const chartDiv = document.getElementById("productChart");
+  const btn = document.querySelector('button[onclick="showProductChart()"]');
+  if (chartDiv.style.display === "block") {
+    chartDiv.style.display = "none";
+    btn.innerText = "📦 Show Product Stock & Price";
+    return;
+  }
+  let html = `<table style="width:100%;border-collapse:collapse;">
+    <tr>
+      <th style="border:1px solid #ccc;padding:6px;">Product</th>
+      <th style="border:1px solid #ccc;padding:6px;">Stock</th>
+      <th style="border:1px solid #ccc;padding:6px;">Sell Price (৳)</th>
+    </tr>`;
+  Object.entries(products).forEach(([name, p]) => {
+    html += `<tr>
+      <td style="border:1px solid #ccc;padding:6px;">${name}</td>
+      <td style="border:1px solid #ccc;padding:6px;">${p.stock}</td>
+      <td style="border:1px solid #ccc;padding:6px;">${p.sellPrice}</td>
+    </tr>`;
+  });
+  html += `</table>`;
+  chartDiv.innerHTML = html;
+  chartDiv.style.display = "block";
+  btn.innerText = "❌ Hide Product Stock & Price";
+}
+
+function toggleSection(sectionId) {
+  const section = document.getElementById(sectionId);
+  if (section.style.display === "none" || section.style.display === "") {
+    section.style.display = "block";
+  } else {
+    section.style.display = "none";
+  }
+}
+
+function updateProductDropdown() {
+  const productSelect = document.getElementById("product");
+  const editSelect = document.getElementById("editProduct");
+  const stockSelect = document.getElementById("stockProduct");
+  const updSelect = document.getElementById("upd_productSelect");
+  const productNames = Object.keys(products).sort();
+
+  if (productSelect) {
+    productSelect.innerHTML = '<option disabled selected>Choose your product...</option>';
+    productNames.forEach(name => {
+      productSelect.innerHTML += `<option value="${name}">${name}</option>`;
+    });
+  }
+  if (editSelect) {
+    editSelect.innerHTML = '';
+    productNames.forEach(name => {
+      editSelect.innerHTML += `<option value="${name}">${name}</option>`;
+    });
+  }
+  if (stockSelect) {
+    stockSelect.innerHTML = '';
+    productNames.forEach(name => {
+      stockSelect.innerHTML += `<option value="${name}">${name}</option>`;
+    });
+  }
+  if (updSelect) {
+    updSelect.innerHTML = '<option value="" disabled selected>Select product...</option>';
+    productNames.forEach(name => {
+      updSelect.innerHTML += `<option value="${name}">${name}</option>`;
+    });
+  }
+}
+
+// --- POPULATE UPDATE PRODUCT SELECT ---
+async function populateUpdateProductSelect() {
+  await loadProductsFromFirestore();
+}
+window.populateUpdateProductSelect = populateUpdateProductSelect;
+
+// --- FILL UPDATE PRODUCT FIELDS ---
+async function fillUpdateProductFields() {
+  const sel = document.getElementById('upd_productSelect');
+  const pname = sel.value;
+  const fieldsDiv = document.getElementById('upd_fields');
+  if (!pname) { fieldsDiv.style.display = "none"; return; }
+  try {
+    const docSnap = await getDoc(doc(db, "products", pname));
+    if (docSnap.exists()) {
+      const d = docSnap.data();
+      document.getElementById('upd_productName').value = d.productName;
+      document.getElementById('upd_stock').value = d.stock;
+      document.getElementById('upd_purchasePrice').value = d.purchasePrice;
+      document.getElementById('upd_sellingPrice').value = d.sellingPrice;
+      fieldsDiv.style.display = "";
+    } else {
+      fieldsDiv.style.display = "none";
+    }
+  } catch (e) {
+    fieldsDiv.style.display = "none";
+  }
+  document.getElementById('upd_status').textContent = "";
+}
+window.fillUpdateProductFields = fillUpdateProductFields;
+
+// --- UPDATE PRODUCT DETAILS IN FIRESTORE ---
+async function updateProductDetails() {
+  const pname = document.getElementById('upd_productName').value;
+  const stock = parseInt(document.getElementById('upd_stock').value, 10);
+  const purchasePrice = parseFloat(document.getElementById('upd_purchasePrice').value);
+  const sellingPrice = parseFloat(document.getElementById('upd_sellingPrice').value);
+  const statusEl = document.getElementById('upd_status');
+  if (!pname || isNaN(stock) || isNaN(purchasePrice) || isNaN(sellingPrice)) {
+    statusEl.textContent = "❌ Please fill all fields correctly.";
+    statusEl.style.color = "#b77";
+    return;
+  }
+  try {
+    await updateDoc(doc(db, "products", pname), {
+      stock,
+      purchasePrice,
+      sellingPrice
+    });
+    statusEl.textContent = "✅ Product updated!";
+    statusEl.style.color = "#2b7a0b";
+    await loadProductsFromFirestore();
+  } catch (e) {
+    statusEl.textContent = "❌ Error updating product.";
+    statusEl.style.color = "#b77";
+    console.error(e);
+  }
+}
+window.updateProductDetails = updateProductDetails;
+
+function saveTypedCustomer() {
+  const name = document.getElementById("customer").value.trim();
+  const btn = document.getElementById("saveCustomerBtn");
+  if (!name) {
+    alert("Please enter a customer name.");
+    return;
+  }
+  if (customers.includes(name)) {
+    alert("Customer already saved.");
+    btn.style.display = "none";
+    return;
+  }
+  customers.push(name);
+  updateCustomerDropdown();
+  saveToStorage().then(() => {
+    alert("✅ Customer saved!");
+    btn.style.display = "none";
+  });
+}
+
+function updateCustomerDropdown() {
+  // Update datalist for main customer input (for typing)
+  const datalist = document.getElementById("customers");
+  if (datalist) {
+    datalist.innerHTML = '';
+    customers.forEach(name => {
+      datalist.innerHTML += `<option value="${name}">`;
+    });
+  }
+  // Update dropdown for monthly bill (for selecting only)
+  const monthlySelect = document.getElementById("monthlyCustomer");
+  if (monthlySelect) {
+    monthlySelect.innerHTML = '<option value="" disabled selected>Select customer...</option>';
+    customers.forEach(name => {
+      monthlySelect.innerHTML += `<option value="${name}">${name}</option>`;
+    });
+  }
+  // Update dropdown for monthly statement customer selection
+  const monthlyStatementSelect = document.getElementById("monthlyStatementCustomer");
+  if (monthlyStatementSelect) {
+    monthlyStatementSelect.innerHTML = '<option value="" disabled selected>Select customer...</option>';
+    customers.forEach(name => {
+      monthlyStatementSelect.innerHTML += `<option value="${name}">${name}</option>`;
+    });
+  }
+}
+
+async function addStockToFirestore() {
+  const pname = document.getElementById("stockProduct").value;
+  const amount = parseInt(document.getElementById("stockAmount").value, 10);
+  const statusEl = document.getElementById("stockUpdateStatus");
+  if (!pname || isNaN(amount) || amount <= 0) {
+    statusEl.textContent = "❌ Please select a product and enter a valid stock amount.";
+    statusEl.style.color = "#b77";
+    return;
+  }
+  try {
+    // Get current stock from Firestore
+    const docSnap = await getDoc(doc(db, "products", pname));
+    let newStock = amount;
+    if (docSnap.exists()) {
+      const d = docSnap.data();
+      newStock = (parseInt(d.stock, 10) || 0) + amount;
+    }
+    await updateDoc(doc(db, "products", pname), { stock: newStock });
+    statusEl.textContent = `✅ Stock updated! New stock: ${newStock}`;
+    statusEl.style.color = "#2b7a0b";
+    document.getElementById("stockAmount").value = "";
+    await loadProductsFromFirestore();
+  } catch (e) {
+    statusEl.textContent = "❌ Error updating stock.";
+    statusEl.style.color = "#b77";
+    console.error(e);
+  }
+}
+window.addStockToFirestore = addStockToFirestore;
+
+// --- SELL ITEM: DEDUCT STOCK IN FIRESTORE AND SAVE RECEIPT TO DB ---
+async function addToList() {
+  const name = document.getElementById("product").value;
+  const qty = parseInt(document.getElementById("quantity").value);
+  const date = document.getElementById("date").value;
+  if (!name || !qty || qty <= 0) return;
+
+  const product = products[name];
+  if (!product) {
+    alert("Product not found!");
+    return;
+  }
+
+  // Check available stock in Firestore
+  let availableStock = product.stock;
+  try {
+    const docSnap = await getDoc(doc(db, "products", name));
+    if (docSnap.exists()) {
+      availableStock = parseInt(docSnap.data().stock, 10) || 0;
+    }
+  } catch (e) {
+    alert("❌ Error checking stock.");
+    return;
+  }
+
+  if (qty > availableStock) {
+    alert("Not enough stock!");
+    return;
+  }
+
+  // Deduct stock in Firestore
+  try {
+    const docRef = doc(db, "products", name);
+    await updateDoc(docRef, { stock: availableStock - qty });
+    await loadProductsFromFirestore();
+  } catch (e) {
+    alert("❌ Error updating stock in database.");
+    console.error(e);
+    return;
+  }
+
+  const price = product.sellPrice;
+  const total = price * qty;
+  productList.push({ name, price, qty, total });
+
+  // Update product stock, sold, and profit (local)
+  product.stock -= qty;
+  product.sold += qty;
+  product.profit += (product.sellPrice - product.purchasePrice) * qty;
+
+  // --- Update daily product stats ---
+  if (!dailyProductStats[date]) dailyProductStats[date] = {};
+  if (!dailyProductStats[date][name]) dailyProductStats[date][name] = { sold: 0, profit: 0 };
+  dailyProductStats[date][name].sold += qty;
+  dailyProductStats[date][name].profit += (product.sellPrice - product.purchasePrice) * qty;
+
+  saveToStorage();
+
+  // Update product list UI
+  const list = document.getElementById("productList");
+  if (list) {
+    list.innerHTML = '';
+    totalAmount = 0;
+    productList.forEach((p, i) => {
+      list.innerHTML += `<li>${p.name}, price: ${p.price}৳, qty: ${p.qty}, total: ${p.total}৳</li>`;
+      totalAmount += p.total;
+    });
+  }
+
+  document.getElementById("total").innerText = `💵 Total Amount: ৳${totalAmount}`;
+  calculateChange();
+}
+window.addToList = addToList;
+
+// --- SAVE RECEIPT REPORT TO FIRESTORE ---
+async function viewAndSaveReport() {
+  const date = document.getElementById("date").value;
+  const name = document.getElementById("customer").value;
+  const cash = document.getElementById("cash").value;
+
+  if (!date || !name || productList.length === 0) {
+    alert("Please fill all receipt fields and add at least one product.");
+    return;
+  }
+
+  let report = `📅 Date: ${date}\n👤 Customer Name: ${name}\n📦 Product list:\n`;
+  productList.forEach((p, i) => {
+    report += `${i + 1}. ${p.name}, price: ${p.price}৳, qty: ${p.qty}, total: ${p.total}৳\n`;
+  });
+  report += `\n💵 Total Amount: ${totalAmount}৳ | 💳 Cash: ${cash}৳ | 🔁 Change: ${cash - totalAmount}৳`;
+
+  document.getElementById("viewReport").innerText = report;
+
+  // Save to Firestore: collection "receipts", doc id = date, array of reports
+  try {
+    const receiptsRef = doc(db, "receipts", date);
+    let existing = [];
+    const snap = await getDoc(receiptsRef);
+    if (snap.exists()) {
+      existing = snap.data().reports || [];
+    }
+    existing.push(report);
+    await setDoc(receiptsRef, { reports: existing });
+  } catch (e) {
+    alert("❌ Error saving receipt to database.");
+    console.error(e);
+  }
+
+  // Also update local dailyReports for UI
+  if (!dailyReports[date]) dailyReports[date] = [];
+  dailyReports[date].push(report);
+  saveToStorage();
+  alert("✅ Report saved!");
+  productList = [];
+  document.getElementById("productList").innerHTML = '';
+  totalAmount = 0;
+  document.getElementById("total").innerText = `💵 Total Amount: ৳0`;
+  calculateChange();
+}
+window.viewAndSaveReport = viewAndSaveReport;
+
+// --- LOAD DAILY REPORTS FROM FIRESTORE ---
+async function loadDailyReports() {
+  const date = document.getElementById("dailyDate").value;
+  const container = document.getElementById("dailyReports");
+  let reports = [];
+
+  // Try to load from Firestore
+  try {
+    const snap = await getDoc(doc(db, "receipts", date));
+    if (snap.exists()) {
+      reports = snap.data().reports || [];
+    }
+  } catch (e) {
+    // fallback to local
+    reports = dailyReports[date] || [];
+  }
+
+  let totalSell = 0;
+  reports.forEach(r => {
+    const match = r.match(/Total Amount: (\d+)/);
+    if (match) totalSell += parseInt(match[1]);
+  });
+
+  let summary = `<b>Total transaction: ${reports.length}</b><br><b>Total sell: ${totalSell}৳</b><br><br>`;
+  container.innerHTML = summary + reports.join("<br><br>");
+}
+window.loadDailyReports = loadDailyReports;
+
+// --- TOGGLE DAILY REPORT (unchanged, but calls loadDailyReports) ---
+function toggleDailyReport(btn) {
+  const dailyDiv = document.getElementById("dailyReports");
+  if (dailyDiv.style.display === "block") {
+    dailyDiv.style.display = "none";
+    btn.innerText = "📊 View Daily Report";
+  } else {
+    loadDailyReports(); // This will update the daily report content
+    dailyDiv.style.display = "block";
+    btn.innerText = "❌ Hide Daily Report";
+  }
+}
+window.toggleDailyReport = toggleDailyReport;
+
+// --- COPY REPORT TO CLIPBOARD ---
+function copyReport() {
+  let text = document.getElementById("viewReport").innerText;
+  if (!text) return alert("No report to copy.");
+  // Add shop name only to the copied text
+  text = "জননী জেনারেল ষ্টোর\n\n" + text;
+  navigator.clipboard.writeText(text)
+    .then(() => alert("Report copied! You can now paste it in WhatsApp or anywhere."))
+    .catch(() => alert("Failed to copy. Please copy manually."));
+}
+
+// --- SEND REPORT VIA WHATSAPP ---
+function sendViaWhatsApp() {
+  const text = document.getElementById("viewReport").innerText;
+  if (!text) return alert("No report to send.");
+
+  // Use Web Share API if available
+  if (navigator.share) {
+    navigator.share({
+      text: text
+    }).catch((err) => {
+      // User cancelled or error
+      alert("Sharing cancelled or failed.");
+    });
+  } else {
+    // Fallback to WhatsApp link
+    const encoded = encodeURIComponent(text);
+    const url = `https://wa.me/?text=${encoded}`;
+    window.open(url, "_blank");
+    alert("If sharing did not work, please open in Chrome or copy the message manually.");
+  }
+}
+
+// --- TOGGLE PRODUCT REPORT ---
+async function toggleProductReport(btn) {
+  const date = document.getElementById("reportDate").value;
+  if (!date) {
+    alert("Please select a date to view the product report.");
+    return;
+  }
+  const prodDiv = document.getElementById("productReport");
+  if (prodDiv.style.display === "block") {
+    prodDiv.style.display = "none";
+    btn.innerText = "Show Product Report";
+  } else {
+    await showProductReportByDate(); // Now awaits the async function
+    prodDiv.style.display = "block";
+    btn.innerText = "❌ Hide Product Report";
+  }
+}
+window.toggleProductReport = toggleProductReport;
+
+// --- SHOW PRODUCT REPORT BY DATE (from receipts in DB) ---
+async function showProductReportByDate() {
+  const date = document.getElementById("reportDate").value;
+  // Initialize stats for all products
+  const stats = {};
+  Object.keys(products).forEach(name => {
+    stats[name] = { sold: 0, profit: 0, incoming: 0 };
+  });
+
+  // Load receipts from Firestore for the selected date
+  let reports = [];
+  try {
+    const snap = await getDoc(doc(db, "receipts", date));
+    if (snap.exists()) {
+      reports = snap.data().reports || [];
+    }
+  } catch (e) {
+    // fallback to local
+    reports = dailyReports[date] || [];
+  }
+
+  // Parse each report and accumulate sold/profit per product
+  reports.forEach(r => {
+    // Each product line: "1. Chips, price: 10৳, qty: 2, total: 20৳"
+    const lines = r.split('\n').filter(line => /^\d+\.\s/.test(line));
+    lines.forEach(line => {
+      // Extract product name, price, qty
+      const match = line.match(/^\d+\.\s(.+), price: (\d+)৳, qty: (\d+), total: (\d+)৳/);
+      if (match) {
+        const [_, name, priceStr, qtyStr] = match;
+        const qty = parseInt(qtyStr, 10);
+        const price = parseFloat(priceStr);
+        if (stats[name]) {
+          // Calculate profit using product purchase price
+          const purchasePrice = products[name]?.purchasePrice || 0;
+          stats[name].sold += qty;
+          stats[name].profit += (price - purchasePrice) * qty;
+        }
+      }
+    });
+  });
+
+  // Build the report table
+  let totalProfit = 0;
+  let html = `<table style="width:100%;border-collapse:collapse;">
+    <tr>
+      <th style="border:1px solid #ccc;padding:6px;text-align:center;">Product</th>
+      <th style="border:1px solid #ccc;padding:6px;text-align:center;">Stock</th>
+      <th style="border:1px solid #ccc;padding:6px;text-align:center;">Purchase Price (৳)</th>
+      <th style="border:1px solid #ccc;padding:6px;text-align:center;">Sell Price (৳)</th>
+      <th style="border:1px solid #ccc;padding:6px;text-align:center;">Incoming</th>
+      <th style="border:1px solid #ccc;padding:6px;text-align:center;">Sold</th>
+      <th style="border:1px solid #ccc;padding:6px;text-align:center;">Profit (৳)</th>
+    </tr>`;
+  Object.entries(products).forEach(([name, p]) => {
+    const s = stats[name] || { sold: 0, profit: 0, incoming: 0 };
+    totalProfit += s.profit;
+    html += `<tr>
+      <td style="border:1px solid #ccc;padding:6px;text-align:left;">${name}</td>
+      <td style="border:1px solid #ccc;padding:6px;text-align:center;">${p.stock}</td>
+      <td style="border:1px solid #ccc;padding:6px;text-align:center;">${p.purchasePrice}</td>
+      <td style="border:1px solid #ccc;padding:6px;text-align:center;">${p.sellPrice}</td>
+      <td style="border:1px solid #ccc;padding:6px;text-align:center;">${s.incoming || 0}</td>
+      <td style="border:1px solid #ccc;padding:6px;text-align:center;">${s.sold}</td>
+      <td style="border:1px solid #ccc;padding:6px;text-align:center;">${s.profit}</td>
+    </tr>`;
+  });
+  // Add total profit row
+  html += `<tr>
+    <td colspan="6" style="border:1px solid #ccc;padding:6px;text-align:right;font-weight:bold;">Total Profit (৳)</td>
+    <td style="border:1px solid #ccc;padding:6px;text-align:center;font-weight:bold;">${totalProfit}</td>
+  </tr>`;
+  html += `</table>`;
+  document.getElementById("productReport").innerHTML = html;
+}
+
+function onReportDateChange() {
+  const date = document.getElementById("reportDate").value;
+  const btn = document.getElementById("showProductReportBtn");
+  // Also hide the report if date is cleared
+  if (!date) {
+    document.getElementById("productReport").style.display = "none";
+    btn.innerText = "Show Product Report";
+  }
+}
+
+function addNewProduct() {
+  const name = document.getElementById("newProduct").value.trim();
+  const purchasePrice = parseInt(document.getElementById("newPurchasePrice").value);
+  const sellPrice = parseInt(document.getElementById("newSellPrice").value);
+
+  if (name && purchasePrice > 0 && sellPrice > 0) {
+    products[name] = {
+      stock: 0,
+      purchasePrice: purchasePrice,
+      sellPrice: sellPrice,
+      sold: 0,
+      profit: 0
+    };
+    saveToStorage();
+    updateProductDropdown();
+    updateCustomerDropdown();
+    alert("✅Product added!");
+
+    // Clear the input fields after saving
+    document.getElementById("newProduct").value = '';
+    document.getElementById("newPurchasePrice").value = '';
+    document.getElementById("newSellPrice").value = '';
+  } else {
+    alert("❌Please fill all product fields correctly.");
+  }
+}
+
+function addStock() {
+  const name = document.getElementById("stockProduct").value;
+  const date = document.getElementById("stockDate").value;
+  const amount = parseInt(document.getElementById("stockAmount").value);
+
+  if (!name || !date || !amount || amount <= 0) {
+    alert("❌ Please select product, date, and enter a valid stock amount.");
+    return;
+  }
+
+  // Update product stock
+  products[name].stock += amount;
+
+  // Track incoming stock by date (optional, for advanced tracking)
+  if (!dailyProductStats[date]) dailyProductStats[date] = {};
+  if (!dailyProductStats[date][name]) dailyProductStats[date][name] = { sold: 0, profit: 0, incoming: 0 };
+  dailyProductStats[date][name].incoming = (dailyProductStats[date][name].incoming || 0) + amount;
+
+  saveToStorage();
+  updateProductDropdown();
+  alert(`✅ Added ${amount} to ${name} on ${date}!`);
+  document.getElementById("stockAmount").value = '';
+}
+
+function editProductPurchasePrice() {
+  const name = document.getElementById("editProduct").value;
+  const price = parseInt(document.getElementById("editPurchasePrice").value);
+  if (name && price > 0 && products[name]) {
+    products[name].purchasePrice = price;
+    saveToStorage();
+    alert("✅ Purchase price updated!");
+    document.getElementById("editPurchasePrice").value = '';
+  } else {
+    alert("❌ Please choose a product and enter a valid purchase price.");
+  }
+}
+
+function editProductSellPrice() {
+  const name = document.getElementById("editProduct").value;
+  const price = parseInt(document.getElementById("editSellPrice").value);
+  if (name && price > 0 && products[name]) {
+    products[name].sellPrice = price;
+    updateProductDropdown();
+    saveToStorage();
+    alert("✅ Sell price updated!");
+    document.getElementById("editSellPrice").value = '';
+  } else {
+    alert("❌ Please choose a product and enter a valid sell price.");
+  }
+}
+
+function toggleMonthlyBill(btn) {
+  const billDiv = document.getElementById("monthlyBill");
+  const copyBtn = document.getElementById("copyMonthlyBillBtn");
+  const customer = document.getElementById("monthlyCustomer").value;
+  const month = document.getElementById("monthlyMonth").value;
+
+  if (billDiv.style.display === "block") {
+    billDiv.style.display = "none";
+    copyBtn.style.display = "none";
+    btn.innerText = "📄 View Monthly Bill";
+  } else {
+    if (!customer || !month) {
+      alert("Please select customer and month.");
+      billDiv.style.display = "none";
+      copyBtn.style.display = "none";
+      return;
+    }
+    showMonthlyBill();
+    billDiv.style.display = "block";
+    copyBtn.style.display = "inline-block";
+    btn.innerText = "❌ Hide Monthly Bill";
+  }
+}
+
+function showMonthlyBill() {
+  const customer = document.getElementById("monthlyCustomer").value;
+  const month = document.getElementById("monthlyMonth").value; // format: "2025-05"
+  const billDiv = document.getElementById("monthlyBill");
+  const copyBtn = document.getElementById("copyMonthlyBillBtn");
+  const msg = document.getElementById("customerSelectMsg");
+
+  if (!customer || !month) {
+    msg.style.display = "inline";
+    alert("Please select customer and month.");
+    billDiv.style.display = "none";
+    copyBtn.style.display = "none";
+    return;
+  } else {
+    msg.style.display = "none";
+  }
+
+  let report = `🗓️ Monthly Bill for <b>${customer}</b> (${month})<br><br>`;
+  let total = 0;
+  let found = false;
+
+  // Loop through all days in the selected month
+  Object.keys(dailyReports).forEach(date => {
+    if (date.startsWith(month)) {
+      const reports = dailyReports[date] || [];
+      reports.forEach(r => {
+        if (r.includes(customer)) {
+          found = true;
+          report += `<div style="margin-bottom:10px;border-bottom:1px solid #ccc;padding-bottom:5px;">${r.replace(/\n/g, "<br>")}</div>`;
+          const match = r.match(/Total Amount: (\d+)/);
+          if (match) total += parseInt(match[1]);
+        }
+      });
+    }
+  });
+
+  if (!found) {
+    report += "<i>No transactions found for this customer in this month.</i>";
+  } else {
+    report += `<b style="font-size:1.1em;">Total Bill for ${customer}: ৳${total}</b>`;
+  }
+
+  billDiv.innerHTML = report;
+  billDiv.style.display = "block";
+  copyBtn.style.display = "inline-block";
+}
+
+function copyMonthlyBill() {
+  let text = document.getElementById("monthlyBill").innerText;
+  if (!text) return alert("No bill to copy.");
+  // Add shop name only to the copied text
+  text = "জননী জেনারেল ষ্টোর\n\n" + text;
+  navigator.clipboard.writeText(text)
+    .then(() => alert("Monthly bill copied!"))
+    .catch(() => alert("Failed to copy. Please copy manually."));
+}
+
+// --- ADD NEW PRODUCT TO FIRESTORE ---
+async function addNewProductToFirestore() {
+  const productName = document.getElementById('np_productName').value.trim();
+  const stock = parseInt(document.getElementById('np_stock').value, 10);
+  const purchasePrice = parseFloat(document.getElementById('np_purchasePrice').value);
+  const sellingPrice = parseFloat(document.getElementById('np_sellingPrice').value);
+  const statusEl = document.getElementById('np_status');
+
+  if (!productName || isNaN(stock) || isNaN(purchasePrice) || isNaN(sellingPrice)) {
+    statusEl.textContent = "❌ Please fill all fields correctly.";
+    statusEl.style.color = "#b77";
+    return;
+  }
+
+  try {
+    await setDoc(doc(db, "products", productName), {
+      productName,
+      stock,
+      purchasePrice,
+      sellingPrice
+    });
+    statusEl.textContent = "✅ Product added successfully!";
+    statusEl.style.color = "#2b7a0b";
+    document.getElementById('np_productName').value = "";
+    document.getElementById('np_stock').value = "";
+    document.getElementById('np_purchasePrice').value = "";
+    document.getElementById('np_sellingPrice').value = "";
+    await loadProductsFromFirestore();
+  } catch (e) {
+    statusEl.textContent = "❌ Error adding product.";
+    statusEl.style.color = "#b77";
+    console.error(e);
+  }
+}
+window.addNewProductToFirestore = addNewProductToFirestore;
+
+// --- TOGGLE MONTHLY STATEMENT ---
+async function toggleMonthlyStatement(btn) {
+  const month = document.getElementById("monthlyStatementMonth").value;
+  const statementDiv = document.getElementById("monthlyStatement");
+  if (!month) {
+    alert("Please select a month.");
+    return;
+  }
+  if (statementDiv.style.display === "block") {
+    statementDiv.style.display = "none";
+    btn.innerText = "📆 Show Monthly Statement";
+  } else {
+    await showMonthlyStatementByMonth(month);
+    statementDiv.style.display = "block";
+    btn.innerText = "❌ Hide Monthly Statement";
+  }
+}
+window.toggleMonthlyStatement = toggleMonthlyStatement;
+
+// --- SHOW MONTHLY STATEMENT BY MONTH (list all customers with their detailed bills) ---
+async function showMonthlyStatementByMonth(month) {
+  // Gather all receipts for the month
+  const receiptsCol = collection(db, "receipts");
+  let receipts = [];
+  try {
+    const querySnapshot = await getDocs(receiptsCol);
+    querySnapshot.forEach(docSnap => {
+      const date = docSnap.id;
+      if (date.startsWith(month)) {
+        const reports = docSnap.data().reports || [];
+        reports.forEach(r => receipts.push({ date, report: r }));
+      }
+    });
+  } catch (e) {
+    Object.keys(dailyReports).forEach(date => {
+      if (date.startsWith(month)) {
+        (dailyReports[date] || []).forEach(r => receipts.push({ date, report: r }));
+      }
+    });
+  }
+
+  // Group receipts by customer
+  const customerMap = {};
+  receipts.forEach(({ date, report }) => {
+    const custMatch = report.match(/👤 Customer Name: (.+)\n/);
+    const customer = custMatch ? custMatch[1].trim() : null;
+    if (!customer) return;
+    if (!customerMap[customer]) customerMap[customer] = [];
+    customerMap[customer].push({ date, report });
+  });
+
+  let html = `<b>🗓️ Monthly Bills for All Customers (${month})</b><br><br>`;
+  if (Object.keys(customerMap).length === 0) {
+    html += `<i>No transactions found for this month.</i>`;
+  } else {
+    Object.entries(customerMap).forEach(([customer, reports]) => {
+      let total = 0;
+      html += `<div style="margin-bottom:18px;"><b>🗓️ Monthly Bill for ${customer} (${month})</b><br><br>`;
+      reports.sort((a, b) => a.date.localeCompare(b.date));
+      reports.forEach(({ report }) => {
+        html += `<div style="margin-bottom:12px;white-space:pre-line;border-bottom:1px solid #ccc;padding-bottom:8px;">${report}</div>`;
+        const match = report.match(/Total Amount: (\d+)/);
+        if (match) total += parseInt(match[1]);
+      });
+      html += `<b>Total Bill for ${customer}: ৳${total}</b></div><hr>`;
+    });
+  }
+  document.getElementById("monthlyStatement").innerHTML = html;
+}
+
+// --- TOGGLE MONTHLY STATEMENT FOR CUSTOMER ---
+function toggleMonthlyStatementForCustomer(btn) {
+  const month = document.getElementById("monthlyStatementMonth").value;
+  const customer = document.getElementById("monthlyStatementCustomer").value;
+  const statementDiv = document.getElementById("monthlyStatementCustomerDiv");
+  if (!month || !customer) {
+    alert("Please select a month and select a customer.");
+    return;
+  }
+  if (statementDiv.style.display === "block") {
+    statementDiv.style.display = "none";
+    btn.innerText = "👤 Show Customer Statement";
+  } else {
+    showMonthlyStatementForCustomer(month, customer);
+    statementDiv.style.display = "block";
+    btn.innerText = "❌ Hide Customer Statement";
+  }
+}
+window.toggleMonthlyStatementForCustomer = toggleMonthlyStatementForCustomer;
+
+// --- SHOW MONTHLY STATEMENT FOR SPECIFIC CUSTOMER ---
+async function showMonthlyStatementForCustomer(month, customer) {
+  // Gather all receipts for the month
+  const receiptsCol = collection(db, "receipts");
+  let receipts = [];
+  try {
+    const querySnapshot = await getDocs(receiptsCol);
+    querySnapshot.forEach(docSnap => {
+      const date = docSnap.id;
+      if (date.startsWith(month)) {
+        const reports = docSnap.data().reports || [];
+        reports.forEach(r => receipts.push({ date, report: r }));
+      }
+    });
+  } catch (e) {
+    Object.keys(dailyReports).forEach(date => {
+      if (date.startsWith(month)) {
+        (dailyReports[date] || []).forEach(r => receipts.push({ date, report: r }));
+      }
+    });
+  }
+
+  // Filter receipts for the specific customer
+  const filtered = receipts.filter(({ report }) => {
+    const custMatch = report.match(/👤 Customer Name: (.+)\n/);
+    return custMatch && custMatch[1].trim() === customer;
+  });
+
+  let html = `<b>🗓️ Monthly Bill for ${customer} (${month})</b><br><br>`;
+  let total = 0;
+  if (filtered.length === 0) {
+    html += `<i>No transactions found for this customer in this month.</i>`;
+  } else {
+    filtered.sort((a, b) => a.date.localeCompare(b.date));
+    filtered.forEach(({ report }) => {
+      html += `<div style="margin-bottom:12px;white-space:pre-line;border-bottom:1px solid #ccc;padding-bottom:8px;">${report}</div>`;
+      const match = report.match(/Total Amount: (\d+)/);
+      if (match) total += parseInt(match[1]);
+    });
+    html += `<b>Total Bill for ${customer}: ৳${total}</b>`;
+  }
+  document.getElementById("monthlyStatementCustomerDiv").innerHTML = html;
+}
+
+function calculateChange() {
+  const cash = parseInt(document.getElementById("cash").value) || 0;
+  const change = cash - totalAmount;
+  document.getElementById("change").innerText = `🔁 Change: ৳${change}`;
+}
+function toggleViewReport(btn) {
+  const reportDiv = document.getElementById("viewReport");
+  if (reportDiv.style.display === "block") {
+    reportDiv.style.display = "none";
+    btn.innerText = "📋 View & 💾Save Report";
+  } else {
+    viewAndSaveReport(); // This will update the report content
+    reportDiv.style.display = "block";
+    btn.innerText = "❌ Hide Report";
+  }
+}
+
+// Make all UI functions available globally for HTML onclick handlers
+window.showProductChart = showProductChart;
+window.toggleSection = toggleSection;
+window.saveTypedCustomer = saveTypedCustomer;
+window.addToList = addToList;
+window.calculateChange = calculateChange;
+window.toggleViewReport = toggleViewReport;
+window.copyReport = copyReport;
+window.sendViaWhatsApp = sendViaWhatsApp;
+window.toggleDailyReport = toggleDailyReport;
+window.toggleProductReport = toggleProductReport;
+window.onReportDateChange = onReportDateChange;
+window.addNewProduct = addNewProduct;
+window.addStock = addStock;
+window.editProductPurchasePrice = editProductPurchasePrice;
+window.editProductSellPrice = editProductSellPrice;
+window.populateUpdateProductSelect = populateUpdateProductSelect;
+window.fillUpdateProductFields = fillUpdateProductFields;
+window.updateProductDetails = updateProductDetails;
+window.copyMonthlyBill = copyMonthlyBill;
+
+</script>
+</body>
+</html>
