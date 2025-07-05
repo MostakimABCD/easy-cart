@@ -166,6 +166,8 @@
         <label>💸 Selling Price (৳):</label>
         <input type="number" id="upd_sellingPrice" />
         <button class="green" onclick="updateProductDetails()">💾 Update Product in Firestore</button>
+        <!-- Add Delete Button -->
+        <button class="green" style="background:#c00;color:#fff;margin-left:10px;" onclick="deleteProductFromFirestore()">🗑️ Delete Product</button>
         <span id="upd_status" style="margin-left:10px;color:#2b7a0b;font-size:0.95em;"></span>
       </div>
     </div>
@@ -180,7 +182,7 @@
 <script type="module">
 // --- FIREBASE IMPORTS ---
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
-import { getFirestore, doc, setDoc, getDoc, collection, addDoc, getDocs, updateDoc } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+import { getFirestore, doc, setDoc, getDoc, collection, addDoc, getDocs, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-analytics.js";
 
 // --- FIREBASE INIT ---
@@ -1175,6 +1177,35 @@ function toggleViewReport(btn) {
     btn.innerText = "❌ Hide Report";
   }
 }
+
+// --- DELETE PRODUCT FROM FIRESTORE ---
+async function deleteProductFromFirestore() {
+  const pname = document.getElementById('upd_productName').value;
+  const statusEl = document.getElementById('upd_status');
+  if (!pname) {
+    statusEl.textContent = "❌ Please select a product to delete.";
+    statusEl.style.color = "#b77";
+    return;
+  }
+  if (!confirm(`Are you sure you want to delete "${pname}"? This cannot be undone.`)) {
+    return;
+  }
+  try {
+    await deleteDoc(doc(db, "products", pname));
+    statusEl.textContent = "✅ Product deleted!";
+    statusEl.style.color = "#2b7a0b";
+    // Remove from local products object
+    delete products[pname];
+    await loadProductsFromFirestore();
+    // Hide fields after deletion
+    document.getElementById('upd_fields').style.display = "none";
+  } catch (e) {
+    statusEl.textContent = "❌ Error deleting product.";
+    statusEl.style.color = "#b77";
+    console.error(e);
+  }
+}
+window.deleteProductFromFirestore = deleteProductFromFirestore;
 
 // Make all UI functions available globally for HTML onclick handlers
 window.showProductChart = showProductChart;
