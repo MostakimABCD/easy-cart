@@ -222,6 +222,9 @@ async function loadProductsFromFirestore() {
         profit: d.profit || 0
       };
     });
+    // Load customers from Firestore for dropdowns
+    const custSnap = await getDoc(doc(db, "easycart", "customers"));
+    if (custSnap.exists()) customers = custSnap.data().customers || [];
     updateProductDropdown();
     updateCustomerDropdown();
   } catch (e) {
@@ -445,17 +448,28 @@ function saveTypedCustomer() {
     alert("Please enter a customer name.");
     return;
   }
-  if (customers.includes(name)) {
-    alert("Customer already saved.");
-    btn.style.display = "none";
-    return;
-  }
-  customers.push(name);
-  updateCustomerDropdown();
-  saveToStorage().then(() => {
-    alert("✅ Customer saved!");
-    btn.style.display = "none";
-  });
+  // Fetch latest customers from Firestore before adding
+  (async () => {
+    try {
+      const docSnap = await getDoc(doc(db, "easycart", "customers"));
+      let latestCustomers = [];
+      if (docSnap.exists()) latestCustomers = docSnap.data().customers || [];
+      if (latestCustomers.includes(name)) {
+        alert("Customer already saved.");
+        btn.style.display = "none";
+        return;
+      }
+      latestCustomers.push(name);
+      customers = latestCustomers;
+      updateCustomerDropdown();
+      await setDoc(doc(db, "easycart", "customers"), { customers });
+      alert("✅ Customer saved!");
+      btn.style.display = "none";
+    } catch (e) {
+      alert("❌ Error saving customer.");
+      console.error(e);
+    }
+  })();
 }
 
 function updateCustomerDropdown() {
